@@ -1,0 +1,11 @@
+email_text,label
+"Dear customer, your bank account has been suspended. Click here to verify your password immediately.",phishing
+"Meeting reminder: our project discussion is scheduled for 3 PM in the conference room.",legitimate
+"Congratulations, you won a free prize. Send your card number to claim it now.",phishing
+"Please find attached the class timetable for the next semester.",legitimate
+"Urgent action required. Your email storage is full. Login with your password to avoid account deletion.",phishing
+"Hi team, I have uploaded the report to the shared folder for review.",legitimate
+"Security alert: unusual login detected. Confirm your username and password using this link.",phishing
+"Your order has been shipped and the tracking number is available in your account.",legitimate
+"We noticed suspicious activity. Verify your bank details within 24 hours or your account will close.",phishing
+"Can you please send the updated presentation before tomorrow's meeting?",legitimate

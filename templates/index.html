@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Phishing Email Detection System</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+    <main class="app-shell">
+        <section class="intro">
+            <p class="eyebrow">AI + NLP Mini Project</p>
+            <h1>Phishing Email Detection System</h1>
+            <p class="subtitle">
+                Paste an email message below and the machine learning model will classify it as phishing/spam or legitimate.
+            </p>
+        </section>
+
+        <section class="detector">
+            <form method="POST" class="email-form">
+                <label for="email_text">Email content</label>
+                <textarea
+                    id="email_text"
+                    name="email_text"
+                    placeholder="Example: Your account has been locked. Click this link immediately to verify your password..."
+                    required
+                >{{ email_text }}</textarea>
+                <button type="submit">Analyze Email</button>
+            </form>
+
+            {% if prediction %}
+            <div class="result {% if prediction == 'Legitimate' %}safe{% else %}danger{% endif %}">
+                <span class="result-label">Prediction</span>
+                <strong>{{ prediction }}</strong>
+                <p>Confidence: {{ confidence }}%</p>
+            </div>
+            {% endif %}
+        </section>
+    </main>
+</body>
+</html>
