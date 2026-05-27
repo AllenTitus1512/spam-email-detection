@@ -2,3 +2,5 @@ Flask
 scikit-learn
 pandas
 joblib
+google-generativeai
+python-dotenv

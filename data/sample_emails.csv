@@ -1,11 +1,103 @@
 email_text,label
-"Dear customer, your bank account has been suspended. Click here to verify your password immediately.",phishing
-"Meeting reminder: our project discussion is scheduled for 3 PM in the conference room.",legitimate
-"Congratulations, you won a free prize. Send your card number to claim it now.",phishing
-"Please find attached the class timetable for the next semester.",legitimate
-"Urgent action required. Your email storage is full. Login with your password to avoid account deletion.",phishing
-"Hi team, I have uploaded the report to the shared folder for review.",legitimate
-"Security alert: unusual login detected. Confirm your username and password using this link.",phishing
-"Your order has been shipped and the tracking number is available in your account.",legitimate
-"We noticed suspicious activity. Verify your bank details within 24 hours or your account will close.",phishing
-"Can you please send the updated presentation before tomorrow's meeting?",legitimate
+"Dear customer, your account has been suspended due to suspicious activity. Please verify immediately: https://secure-bank-update.com/login",phishing
+"Thank you for shopping with us. Your Amazon order #A39281 has been shipped.",legitimate
+"URGENT: Your PayPal account is under review. Click here to secure it: http://paypal-alert-security.com",phishing
+"Hi John, Please find the attached invoice for last month's project.",legitimate
+"Your Netflix subscription is expiring soon. Renew here: https://netflix-billing-renew.com",phishing
+"Weekly company newsletter - Latest updates and announcements.",legitimate
+"Congratulations! You've won ₹50,000. Claim your prize: https://luckydraw-winner.com",phishing
+"Reminder: Team meeting at 10 AM tomorrow in Conference Room A.",legitimate
+"ALERT: Unusual login detected. Verify your identity now: https://bank-security.com/confirm",phishing
+"Invoice #INV-4782 attached. Please process payment by 30th May.",legitimate
+"Your package is ready for delivery. Track it here: https://fake-courier-link.com",phishing
+"Doctor appointment confirmed for tomorrow at 3 PM.",legitimate
+"Immediate action required: Update bank details or account will be frozen.",phishing
+"Thank you for your payment. Receipt is attached.",legitimate
+"Security alert: Reset your password immediately using this link.",phishing
+"Monthly performance report for April is attached.",legitimate
+"Claim your free gift card worth ₹5000 now: https://free-gift-scam.com",phishing
+"School fee reminder for the current month.",legitimate
+"Your account will be suspended in 24 hours unless verified.",phishing
+"Welcome to the new employee onboarding program.",legitimate
+"URGENT: Verify your Gmail account or it will be deactivated.",phishing
+"Project deadline extended to next Friday.",legitimate
+"You received ₹25,000. Click to accept: https://suspicious-payment-link.com",phishing
+"Happy Birthday! Enjoy this special discount from our store.",legitimate
+"Warning: Virus detected. Download this tool to clean your device.",phishing
+"Here is the agenda for tomorrow's board meeting.",legitimate
+"Your loan application is approved. Proceed here.",phishing
+"Thank you for completing our customer satisfaction survey.",legitimate
+"Account verification needed immediately.",phishing
+"Quarterly tax summary report attached for your records.",legitimate
+"Claim your $1 million lottery winnings now.",phishing
+"Class test schedule for next week is out.",legitimate
+"Security breach detected. Reset password here.",phishing
+"Invitation to the annual company family day.",legitimate
+"Your electricity bill is due. Pay now to avoid disconnection.",legitimate
+"URGENT: Update your KYC details immediately.",phishing
+"New work-from-home policy update.",legitimate
+"You are eligible for a zero-interest credit card.",phishing
+"Meeting notes from last Friday attached.",legitimate
+"Final warning: Account will be blocked in 12 hours.",phishing
+"Job offer: Software Engineer role at Tech Solutions.",legitimate
+"Track your IRCTC ticket here.",phishing
+"Electricity bill for April is attached.",legitimate
+"Important: Link your Aadhaar with mobile number.",phishing
+"Team outing photos from last weekend.",legitimate
+"Refund of ₹1200 has been processed.",legitimate
+"Warning: Your device is infected. Download antivirus.",phishing
+"Parent-teacher meeting on 5th June.",legitimate
+"Claim your free iPhone 15: https://free-gadget-giveaway.com",phishing
+"Salary slip for April 2026 attached.",legitimate
+"Dear user, unusual activity detected on your SBI account.",phishing
+"Booking confirmation for your flight to Delhi.",legitimate
+"Update your PAN details immediately to avoid penalty.",phishing
+"HR policy update regarding leave balance.",legitimate
+"Your mutual fund investment report is ready.",legitimate
+"Click here to claim your free voucher worth ₹2000.",phishing
+"College fest registration is now open.",legitimate
+"ALERT: Your HDFC credit card is blocked.",phishing
+"Project submission deadline reminder.",legitimate
+"Congratulations on winning an Amazon gift card.",phishing
+"Exam timetable for Semester 4 is released.",legitimate
+"Immediate: Verify your UPI linked bank account.",phishing
+"Monthly grocery bill summary.",legitimate
+"Security: Someone tried to log into your account.",phishing
+"Invitation to webinar on AI & Machine Learning.",legitimate
+"Your insurance policy is due for renewal.",legitimate
+"Claim your reward points before they expire.",phishing
+"Annual maintenance report for society.",legitimate
+"URGENT: Your DMAT account needs verification.",phishing
+"Feedback form for last training session.",legitimate
+"Download this document to clear your dues.",phishing
+"New course launched: Python for Beginners.",legitimate
+"Account hacked. Reset password using this link.",phishing
+"Leave approval for your application.",legitimate
+"Win exciting prizes by participating in this survey.",phishing
+"Campus placement drive schedule attached.",legitimate
+"Update your address in our records immediately.",phishing
+"Family function invitation card.",legitimate
+"Final notice: Pay your pending bill today.",phishing
+"Quarterly business review meeting minutes.",legitimate
+"Your parcel has arrived at local post office.",legitimate
+"Click here for your exclusive offer.",phishing
+"Library book due reminder.",legitimate
+"Bank account frozen due to suspicious transaction.",phishing
+"Internship completion certificate attached.",legitimate
+"Free recharge offer for your mobile number.",phishing
+"Hostel mess menu for next week.",legitimate
+"Verify your email address to continue service.",phishing
+"Research paper submission guidelines.",legitimate
+"ALERT: Login from unknown device detected.",phishing
+"Salary increment letter for this year.",legitimate
+"Claim your cashback of ₹1500 now.",phishing
+"Class cancellation notice for tomorrow.",legitimate
+"Your PAN card is linked with new number.",legitimate
+"Warning: Fraudulent activity on your account.",phishing
+"Workshop registration confirmation.",legitimate
+"Download this file to update your software.",phishing
+"Annual day celebration invitation.",legitimate
+"Urgent: Complete your KYC for mutual funds.",phishing
+"Medical report attached for your records.",legitimate
+"Win a trip to Goa. Enter now.",phishing
+"Fee payment receipt for this semester.",legitimate
