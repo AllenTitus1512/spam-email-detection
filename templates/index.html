@@ -3,39 +3,52 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Phishing Email Detection System</title>
+    <title>Phishing Email Detector - Gemini AI</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <style>
+        body { font-family: Arial, sans-serif; text-align: center; padding: 30px; background: #f4f7f9; }
+        textarea { width: 80%; max-width: 600px; height: 200px; padding: 15px; margin: 20px auto; display: block; font-family: monospace; border: 2px solid #ddd; border-radius: 8px; font-size: 14px; }
+        textarea:focus { outline: none; border-color: #007bff; box-shadow: 0 0 5px rgba(0, 123, 255, 0.3); }
+        button { padding: 12px 30px; font-size: 18px; background: #007bff; color: white; border: none; border-radius: 8px; cursor: pointer; transition: background 0.3s; }
+        button:hover { background: #0056b3; }
+        button:disabled { background: #ccc; cursor: not-allowed; }
+        .result { margin: 30px auto; padding: 20px; max-width: 700px; border-radius: 10px; }
+        .Phishing { background: #ffebee; color: #c62828; border-left: 5px solid #c62828; }
+        .Legitimate { background: #e8f5e9; color: #2e7d32; border-left: 5px solid #2e7d32; }
+        .result h2 { margin-top: 0; }
+        .result details { text-align: left; margin-top: 15px; }
+        .result pre { background: #f5f5f5; padding: 10px; border-radius: 5px; overflow-x: auto; max-height: 200px; }
+        .container { max-width: 800px; margin: 0 auto; }
+        .error { background: #ffe6e6; color: #d32f2f; padding: 15px; border-radius: 8px; margin: 20px auto; max-width: 700px; }
+    </style>
 </head>
 <body>
-    <main class="app-shell">
-        <section class="intro">
-            <p class="eyebrow">AI + NLP Mini Project</p>
-            <h1>Phishing Email Detection System</h1>
-            <p class="subtitle">
-                Paste an email message below and the machine learning model will classify it as phishing/spam or legitimate.
-            </p>
-        </section>
+    <div class="container">
+        <h1>Phishing Email Detector (Gemini AI)</h1>
+        <p style="color: #666; margin-bottom: 30px;">Submit an email to detect if it's phishing or legitimate</p>
+        
+        {% if error %}
+        <div class="error">{{ error }}</div>
+        {% endif %}
+        
+        <form method="POST">
+            <textarea name="email_text" placeholder="Paste the full email content here..." required></textarea><br>
+            <button type="submit">Analyze Email</button>
+        </form>
 
-        <section class="detector">
-            <form method="POST" class="email-form">
-                <label for="email_text">Email content</label>
-                <textarea
-                    id="email_text"
-                    name="email_text"
-                    placeholder="Example: Your account has been locked. Click this link immediately to verify your password..."
-                    required
-                >{{ email_text }}</textarea>
-                <button type="submit">Analyze Email</button>
-            </form>
-
-            {% if prediction %}
-            <div class="result {% if prediction == 'Legitimate' %}safe{% else %}danger{% endif %}">
-                <span class="result-label">Prediction</span>
-                <strong>{{ prediction }}</strong>
-                <p>Confidence: {{ confidence }}%</p>
-            </div>
+        {% if prediction %}
+        <div class="result {{ prediction }}">
+            <h2>Prediction: <strong>{{ prediction }}</strong></h2>
+            <h3>Confidence: {{ confidence }}%</h3>
+            <p><strong>Reason:</strong> {{ reason }}</p>
+            {% if email_text %}
+            <details>
+                <summary>Preview of Email (click to expand)</summary>
+                <pre>{{ email_text }}</pre>
+            </details>
             {% endif %}
-        </section>
-    </main>
+        </div>
+        {% endif %}
+    </div>
 </body>
 </html>
