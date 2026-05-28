@@ -1,89 +1,59 @@
 from pathlib import Path
-import os
-from dotenv import load_dotenv
-
-# Load .env file FIRST, before any other imports
-env_path = Path(__file__).parent / ".env"
-if env_path.exists():
-    load_dotenv(dotenv_path=env_path)
-else:
-    load_dotenv()
-
+from flask import Flask, render_template, request
 import joblib
-from flask import Flask, render_template, request, jsonify
-from werkzeug.exceptions import BadRequest
 
-from train_model import MODEL_PATH, train_model
 from gemini_detector import detect_with_gemini
 
 app = Flask(__name__)
-app.config['MAX_CONTENT_LENGTH'] = 16 * 1024 * 1024  # 16MB max
 
-def load_model():
-    """Load the trained ML model, train if not exists"""
-    if not MODEL_PATH.exists():
-        print("[INFO] Training model...")
-        train_model()
-    return joblib.load(MODEL_PATH)
+BASE_DIR = Path(__file__).resolve().parent
+MODEL_PATH = BASE_DIR / "model" / "phishing_email_model.joblib"
+
+# Load ML model
+ml_model = None
+if MODEL_PATH.exists():
+    ml_model = joblib.load(MODEL_PATH)
+    print("✅ ML Model loaded successfully")
+else:
+    print("⚠️ ML Model not found. Please run train_model.py first.")
 
 @app.route("/", methods=["GET", "POST"])
 def index():
     prediction = None
     confidence = None
     reason = None
-    email_text = ""
-    error = None
+    email_preview = ""
+    method = "Local ML Model"
 
     if request.method == "POST":
-        try:
-            email_text = request.form.get("email_text", "").strip()
+        email_text = request.form.get("email_text", "").strip()
+        email_preview = email_text[:300] + "..." if len(email_text) > 300 else email_text
 
-            if not email_text:
-                error = "ERROR: Please provide an email to analyze"
+        if email_text:
+            # === PRIORITY: Try Gemini First ===
+            gemini_output = detect_with_gemini(email_text)
+            
+            if gemini_output and gemini_output[0] is not None:
+                prediction, confidence, reason = gemini_output
+                method = "🟢 Gemini AI"
             else:
-                # Try Gemini AI first (primary detector)
-                gemini_label, gemini_conf, gemini_reason = detect_with_gemini(email_text)
-                
-                if gemini_label:
-                    prediction = gemini_label
-                    confidence = gemini_conf
-                    reason = gemini_reason
+                # Fallback
+                if ml_model:
+                    pred_label = ml_model.predict([email_text])[0]
+                    prob = max(ml_model.predict_proba([email_text])[0])
+                    prediction = "Phishing" if pred_label == "phishing" else "Legitimate"
+                    confidence = round(prob * 100, 2)
+                    reason = "Basic ML prediction (Gemini unavailable)"
                 else:
-                    # Fallback to ML model
-                    try:
-                        model = load_model()
-                        pred_label = model.predict([email_text])[0]
-                        probs = model.predict_proba([email_text])[0]
-                        classes = list(model.classes_)
-                        confidence = round(float(probs[classes.index(pred_label)]) * 100, 2)
-                        prediction = "Phishing" if pred_label == "phishing" else "Legitimate"
-                        reason = "Local ML Model (Gemini unavailable)"
-                    except Exception as e:
-                        error = f"❌ Error during analysis: {str(e)}"
-        
-        except BadRequest:
-            error = "ERROR: Request too large. Please provide a shorter email."
-        except Exception as e:
-            error = f"ERROR: Unexpected error: {str(e)}"
+                    prediction = "Error"
+                    reason = "No model available"
 
-    return render_template(
-        "index.html",
-        prediction=prediction,
-        confidence=confidence,
-        reason=reason,
-        email_text=email_text,
-        error=error,
-    )
-
-@app.errorhandler(413)
-def request_entity_too_large(error):
-    """Handle request too large error"""
-    return render_template("index.html", error="ERROR: Request too large. Please provide a shorter email."), 413
-
-@app.errorhandler(500)
-def internal_error(error):
-    """Handle internal server error"""
-    return render_template("index.html", error="ERROR: Internal server error. Please try again."), 500
+    return render_template("index.html",
+                           prediction=prediction,
+                           confidence=confidence,
+                           reason=reason,
+                           email=email_preview,
+                           method=method)
 
 if __name__ == "__main__":
-    app.run(debug=True, port=5000)
+    app.run(debug=True)

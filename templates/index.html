@@ -37,18 +37,21 @@
         </form>
 
         {% if prediction %}
-        <div class="result {{ prediction }}">
-            <h2>Prediction: <strong>{{ prediction }}</strong></h2>
-            <h3>Confidence: {{ confidence }}%</h3>
-            <p><strong>Reason:</strong> {{ reason }}</p>
-            {% if email_text %}
-            <details>
-                <summary>Preview of Email (click to expand)</summary>
-                <pre>{{ email_text }}</pre>
-            </details>
-            {% endif %}
-        </div>
-        {% endif %}
+       {% if prediction %}
+<div class="result {% if prediction == 'Phishing' %}danger{% else %}safe{% endif %}">
+    <h2>Prediction: <strong>{{ prediction }}</strong></h2>
+    <h3>Confidence: {{ confidence }}%</h3>
+    <p><strong>Method:</strong> {{ method }}</p>
+    <p><strong>Reason:</strong> {{ reason }}</p>
+    
+    {% if email %}
+    <details>
+        <summary>Preview of Email (click to expand)</summary>
+        <pre>{{ email }}</pre>
+    </details>
+    {% endif %}
+</div>
+{% endif %} {% endif %}
     </div>
 </body>
 </html>
