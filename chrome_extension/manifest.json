@@ -1,0 +1,30 @@
+{
+  "manifest_version": 3,
+  "name": "PhishGuard — Email Analyzer",
+  "version": "1.0",
+  "description": "Analyze emails for phishing using your existing Flask backend (TF-IDF + Logistic Regression + Gemini).",
+  "permissions": [
+    "activeTab",
+    "scripting",
+    "storage",
+    "notifications"
+  ],
+  "host_permissions": [
+    "http://localhost:5000/*",
+    "https://mail.google.com/*"
+  ],
+  "action": {
+    "default_popup": "popup.html",
+    "default_title": "PhishGuard"
+  },
+  "background": {
+    "service_worker": "background.js"
+  },
+  "content_scripts": [
+    {
+      "matches": ["https://mail.google.com/*"],
+      "js": ["content.js"],
+      "run_at": "document_idle"
+    }
+  ]
+}

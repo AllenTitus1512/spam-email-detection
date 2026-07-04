@@ -1,20 +1,50 @@
 import os
 from dotenv import load_dotenv
-import google.genai as genai
+
+# Try to import Google GenAI SDK under common package names. Some installs
+# expose the module as `google.genai` while others use `google.generativeai`.
+# If neither is available we keep `genai = None` so the rest of the app can
+# continue to run and fall back to the local ML model.
+genai = None
+try:
+    import google.genai as genai
+    print("✅ Imported google.genai")
+except Exception:
+    try:
+        import google.generativeai as genai
+        print("✅ Imported google.generativeai")
+    except Exception:
+        genai = None
+        # Will not raise here; application will fallback to local model when Gemini is unavailable.
 
 load_dotenv()
 
 api_key = os.getenv("GEMINI_API_KEY")
 client = None
 
-if api_key:
+if api_key and genai is not None:
     try:
-        client = genai.Client(api_key=api_key)
-        print("✅ Gemini Client initialized successfully")
+        # Prefer a Client constructor if present (google.genai style).
+        if hasattr(genai, 'Client'):
+            client = genai.Client(api_key=api_key)
+            print("✅ Gemini Client initialized successfully (Client)")
+        else:
+            # Some variants initialize via configure; adapt if available.
+            if hasattr(genai, 'configure'):
+                try:
+                    genai.configure(api_key=api_key)
+                    client = genai
+                    print("✅ Gemini Client initialized successfully (configure)")
+                except Exception as e:
+                    print(f"❌ Failed to configure Gemini client: {e}")
+            else:
+                print("❌ GenAI module found but no known client initializer available")
     except Exception as e:
         print(f"❌ Failed to create Gemini Client: {e}")
-else:
+elif not api_key:
     print("❌ No GEMINI_API_KEY found in .env")
+else:
+    print("❌ No GenAI package available; Gemini features will be disabled")
 
 
 def detect_with_gemini(email_text: str):

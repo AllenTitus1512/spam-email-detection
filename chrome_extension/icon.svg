@@ -1,0 +1,8 @@
+<!-- Simple SVG icon used by notifications and branding -->
+<svg xmlns="http://www.w3.org/2000/svg" width="128" height="128" viewBox="0 0 24 24">
+  <rect width="24" height="24" rx="4" fill="#0b1220"/>
+  <path d="M6 10h12v2H6z" fill="#16a34a"/>
+  <path d="M6 14h8v2H6z" fill="#f59e0b"/>
+  <path d="M6 6h12v2H6z" fill="#ef4444"/>
+  <circle cx="19" cy="5" r="2" fill="#0ea5a3"/>
+</svg>

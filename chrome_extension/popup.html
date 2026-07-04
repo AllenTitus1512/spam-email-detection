@@ -1,0 +1,46 @@
+<!-- Popup UI for PhishGuard extension -->
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>PhishGuard</title>
+  <link rel="stylesheet" href="popup.css" />
+</head>
+<body>
+  <div class="container">
+    <header class="header">
+      <div class="title">PhishGuard</div>
+      <div class="subtitle">Browser email phishing analyzer</div>
+    </header>
+
+    <!-- Email input: auto-filled by content script when possible -->
+    <textarea id="emailText" placeholder="Email content will appear here..." rows="10"></textarea>
+
+    <div class="controls">
+      <button id="analyzeBtn" class="btn primary">Analyze Email</button>
+      <div id="spinner" class="spinner hidden" aria-hidden="true"></div>
+    </div>
+
+    <!-- Result area populated after analysis -->
+    <div id="result" class="result hidden">
+      <div id="status" class="status-row">
+        <span id="statusIcon" class="status-icon">⚪</span>
+        <strong id="statusText">Status</strong>
+      </div>
+      <div class="meta">
+        <div id="confidence" class="meta-item"></div>
+        <div id="risk" class="meta-item"></div>
+        <div id="method" class="meta-item"></div>
+      </div>
+      <div id="reason" class="reason"></div>
+    </div>
+
+    <div id="message" class="message hidden"></div>
+
+    <footer class="footer">Powered by your local backend & Gemini</footer>
+  </div>
+
+  <script src="popup.js"></script>
+</body>
+</html>
