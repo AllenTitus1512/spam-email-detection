@@ -164,3 +164,59 @@ button:hover {
         grid-template-columns: 1fr;
     }
 }
+
+/* Show More / Reason Toggle Styles */
+.reason-section {
+    margin-top: 15px;
+    text-align: left;
+}
+
+.reason-text {
+    margin: 10px 0;
+    line-height: 1.6;
+    color: var(--text);
+    word-wrap: break-word;
+    white-space: pre-wrap;
+}
+
+.reason-text.collapsed {
+    max-height: 100px;
+    overflow: hidden;
+    position: relative;
+    padding-bottom: 30px;
+}
+
+.reason-text.collapsed::after {
+    content: '';
+    position: absolute;
+    bottom: 30px;
+    left: 0;
+    right: 0;
+    height: 30px;
+    background: linear-gradient(to bottom, transparent, rgba(200, 200, 200, 0.2));
+}
+
+.result.danger .reason-text.collapsed::after {
+    background: linear-gradient(to bottom, transparent, rgba(198, 40, 40, 0.1));
+}
+
+.result.safe .reason-text.collapsed::after {
+    background: linear-gradient(to bottom, transparent, rgba(4, 120, 87, 0.1));
+}
+
+.toggle-btn {
+    background: #ff6f00;
+    color: white;
+    padding: 8px 15px;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    margin-top: 10px;
+    font-size: 14px;
+    font-weight: 600;
+    transition: background 0.3s;
+}
+
+.toggle-btn:hover {
+    background: #e65100;
+}

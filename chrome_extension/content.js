@@ -41,7 +41,12 @@ chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
 const observer = new MutationObserver(() => {
   const body = extractEmailBody();
   if(body){
-    chrome.storage.local.set({phishguard_last_email: body});
+    try {
+      chrome.storage.local.set({phishguard_last_email: body});
+    } catch(e) {
+      // Extension context may be invalidated; silently fail
+      console.log('Storage unavailable (extension context invalidated)');
+    }
   }
 });
 

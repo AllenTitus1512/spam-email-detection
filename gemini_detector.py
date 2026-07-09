@@ -51,24 +51,32 @@ def detect_with_gemini(email_text: str):
     if not email_text or not email_text.strip() or client is None:
         return None, None, None
 
-    prompt = f"""You are a cybersecurity expert. Analyze this email:
+    prompt = f"""You are a cybersecurity expert. Analyze this email and determine if it's phishing or legitimate.
 
 Return EXACTLY in this format:
 
 LABEL: Phishing or Legitimate
 CONFIDENCE: 85
-REASON: Short explanation with key red flags
+REASON: Detailed explanation with specific red flags (for phishing) or why it's safe (for legitimate)
 
 Email:
-{email_text[:1800]}"""
+{email_text[:2000]}"""
 
     try:
-        print("🔄 Calling Gemini API...")   # Debug line
+        print("🔄 Calling Gemini API...")
         
-        response = client.models.generate_content(
-            model="gemini-2.5-flash",
-            contents=prompt
-        )
+        # Try the new google.genai API first
+        if hasattr(client, 'models') and hasattr(client.models, 'generate_content'):
+            response = client.models.generate_content(
+                model="gemini-2.5-flash",
+                contents=prompt
+            )
+        # Fall back to old google.generativeai API
+        elif hasattr(genai, 'GenerativeModel'):
+            model = genai.GenerativeModel('gemini-2.5-flash')
+            response = model.generate_content(prompt)
+        else:
+            return None, None, None
         
         text = response.text.strip()
         print("✅ Gemini Response received")
@@ -77,8 +85,11 @@ Email:
         confidence = 75.0
         reason = "Gemini AI Analysis"
 
-        for line in text.split('\n'):
-            line = line.strip()
+        # Parse response - handle multi-line reason
+        lines = text.split('\n')
+        i = 0
+        while i < len(lines):
+            line = lines[i].strip()
             if line.upper().startswith("LABEL:"):
                 label_text = line.split(":", 1)[1].strip()
                 label = "Phishing" if "phish" in label_text.lower() else "Legitimate"
@@ -89,10 +100,21 @@ Email:
                 except:
                     pass
             elif line.upper().startswith("REASON:"):
-                reason = line.split(":", 1)[1].strip()
+                # Capture everything after REASON: including multi-line reasons
+                reason_text = line.split(":", 1)[1].strip()
+                # Collect remaining lines until we hit another field or end
+                i += 1
+                while i < len(lines) and not lines[i].strip().upper().startswith(("LABEL:", "CONFIDENCE:", "REASON:")):
+                    next_line = lines[i].strip()
+                    if next_line:
+                        reason_text += " " + next_line
+                    i += 1
+                reason = reason_text if reason_text else "Gemini AI Analysis"
+                i -= 1  # Adjust since we'll increment at the end of loop
+            i += 1
 
         return label, round(confidence, 1), reason
 
     except Exception as e:
-        print(f"❌ Gemini API Call Failed: {e}")   # This will now show clearly
+        print(f"❌ Gemini API Call Failed: {e}")
         return None, None, None

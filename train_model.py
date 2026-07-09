@@ -28,6 +28,11 @@ def find_column(columns, candidates):
 
 
 def normalize_label(value):
+    """Normalize labels to 'phishing' or 'legitimate' format."""
+    # Handle numeric labels (0 = legitimate, 1 = phishing)
+    if isinstance(value, (int, float)):
+        return "phishing" if value == 1 else "legitimate"
+    
     text = str(value).strip().lower()
     if any(word in text for word in ["phishing", "spam", "fraud", "malicious", "1", "bad"]):
         return "phishing"
@@ -37,14 +42,21 @@ def normalize_label(value):
 
 
 def load_dataset():
-    csv_files = list(DATA_DIR.glob("*.csv"))
-    if not csv_files:
-        raise FileNotFoundError("ERROR: No CSV file found in the 'data' folder!")
-
-    dataset_path = csv_files[0]
-    print(f"[INFO] Loading dataset: {dataset_path.name}")
+    # Prefer merged dataset if it exists
+    merged_path = DATA_DIR / "merged_dataset.csv"
+    if merged_path.exists():
+        dataset_path = merged_path
+    else:
+        csv_files = sorted(list(DATA_DIR.glob("*.csv")), key=lambda x: x.stat().st_size, reverse=True)
+        if not csv_files:
+            raise FileNotFoundError("ERROR: No CSV file found in the 'data' folder!")
+        # Use the largest CSV file
+        dataset_path = csv_files[0]
+    
+    print(f"[INFO] Loading dataset: {dataset_path.name} (Size: {dataset_path.stat().st_size / (1024*1024):.2f} MB)")
     
     df = pd.read_csv(dataset_path)
+    print(f"[INFO] Initial rows: {len(df)}")
 
     text_column = find_column(df.columns, TEXT_COLUMN_CANDIDATES)
     label_column = find_column(df.columns, LABEL_COLUMN_CANDIDATES)
@@ -62,7 +74,10 @@ def load_dataset():
     df["label"] = df["label"].apply(normalize_label)
     df = df[df["label"].isin(["phishing", "legitimate"])]
 
-    print(f"[SUCCESS] Loaded {len(df)} emails ({df['label'].value_counts().to_dict()})")
+    # Remove duplicates
+    df = df.drop_duplicates(subset=["email_text"])
+    
+    print(f"[SUCCESS] Loaded {len(df)} unique emails ({df['label'].value_counts().to_dict()})")
     return df
 
 
@@ -71,22 +86,34 @@ def train_model():
     
     df = load_dataset()
 
-    # Split data
+    # Split data with stratification
     x_train, x_test, y_train, y_test = train_test_split(
         df["email_text"], df["label"], test_size=0.2, random_state=42, stratify=df["label"]
     )
 
-    # Create and train model
+    print(f"\n[INFO] Training set: {len(x_train)} emails")
+    print(f"[INFO] Test set: {len(x_test)} emails")
+
+    # Enhanced model pipeline
     model = Pipeline([
         ("tfidf", TfidfVectorizer(
             lowercase=True, 
             stop_words="english", 
-            max_features=5000, 
-            ngram_range=(1, 2)
+            max_features=8000,  # Increased from 5000
+            ngram_range=(1, 3),  # Include trigrams for better context
+            min_df=2,  # Ignore terms appearing in < 2 docs
+            max_df=0.9,  # Ignore terms appearing in > 90% of docs
+            sublinear_tf=True,  # Sublinear TF scaling
         )),
-        ("classifier", LogisticRegression(max_iter=1000, C=1.0))
+        ("classifier", LogisticRegression(
+            max_iter=1000, 
+            C=0.5,  # Stronger regularization
+            class_weight='balanced',  # Handle class imbalance
+            solver='lbfgs'
+        ))
     ])
 
+    print("\n[INFO] Training model with enhanced parameters...")
     model.fit(x_train, y_train)
     
     # Evaluate
@@ -98,6 +125,7 @@ def train_model():
     # Save model
     joblib.dump(model, MODEL_PATH)
     print(f"\n[SUCCESS] Model successfully saved at: {MODEL_PATH}")
+    print(f"[INFO] Model is ready to detect phishing emails with ~{round(accuracy_score(y_test, y_pred)*100, 1)}% accuracy")
 
 
 if __name__ == "__main__":

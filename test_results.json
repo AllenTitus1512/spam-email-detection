@@ -1,0 +1,136 @@
+{
+  "total": 100,
+  "detected": 83,
+  "missed": 17,
+  "detection_breakdown": {
+    "0.90-1.00": 6,
+    "0.80-0.90": 22,
+    "0.70-0.80": 24,
+    "0.60-0.70": 15,
+    "0.50-0.60": 10,
+    "0.45-0.50": 6,
+    "0.40-0.45": 7,
+    "0.30-0.40": 3,
+    "0.20-0.30": 6,
+    "0.00-0.20": 1
+  },
+  "missed_emails": [
+    {
+      "id": 10,
+      "email": "Netflix: Billing problem - update your card now....",
+      "confidence": 29.67
+    },
+    {
+      "id": 26,
+      "email": "Confirm your mother's maiden name and date of birth....",
+      "confidence": 17.1
+    },
+    {
+      "id": 28,
+      "email": "Send your employee ID and salary information....",
+      "confidence": 28.68
+    },
+    {
+      "id": 31,
+      "email": "Confirm your current salary and job title....",
+      "confidence": 20.71
+    },
+    {
+      "id": 32,
+      "email": "Reply with your complete home address and phone number....",
+      "confidence": 39.93
+    },
+    {
+      "id": 35,
+      "email": "Confirm your business tax ID number....",
+      "confidence": 27.89
+    },
+    {
+      "id": 40,
+      "email": "Earn $5000 per week working from home. No experience needed!...",
+      "confidence": 29.59
+    },
+    {
+      "id": 64,
+      "email": "Local Law Enforcement: Warrant notification....",
+      "confidence": 24.56
+    },
+    {
+      "id": 78,
+      "email": "Your subscription expires TODAY. Renew now to keep access....",
+      "confidence": 38.29
+    },
+    {
+      "id": 94,
+      "email": "Gmail security: https://g-mail-verify.tk/signin...",
+      "confidence": 32.8
+    }
+  ],
+  "borderline_emails": [
+    {
+      "id": 3,
+      "email": "Apple ID: Unusual activity detected. Update your information now....",
+      "confidence": 48.17
+    },
+    {
+      "id": 5,
+      "email": "Microsoft: Your password expires today. Reset it here....",
+      "confidence": 45.58
+    },
+    {
+      "id": 14,
+      "email": "LinkedIn: Confirm your recent login attempt....",
+      "confidence": 44.34
+    },
+    {
+      "id": 15,
+      "email": "Twitter: Verify your account to prevent suspension....",
+      "confidence": 49.1
+    },
+    {
+      "id": 25,
+      "email": "Send us your driver's license copy for verification....",
+      "confidence": 43.4
+    },
+    {
+      "id": 30,
+      "email": "Send photos of your ID documents immediately....",
+      "confidence": 40.43
+    },
+    {
+      "id": 44,
+      "email": "Get paid $100 per survey completed....",
+      "confidence": 43.34
+    },
+    {
+      "id": 55,
+      "email": "Social Security Administration: Your number has been compromised....",
+      "confidence": 42.84
+    },
+    {
+      "id": 59,
+      "email": "NSA: Security threat detected on your device....",
+      "confidence": 48.32
+    },
+    {
+      "id": 60,
+      "email": "Interpol: You are under investigation....",
+      "confidence": 41.24
+    },
+    {
+      "id": 63,
+      "email": "City Hall: Property tax penalty - Pay within 48 hours....",
+      "confidence": 46.47
+    },
+    {
+      "id": 76,
+      "email": "Last chance: Confirm your details before midnight....",
+      "confidence": 45.15
+    },
+    {
+      "id": 100,
+      "email": "Check your account (use this link: [REDACTED FOR SAFETY] but copy from confirmat...",
+      "confidence": 44.15
+    }
+  ]
+}
