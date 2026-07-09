@@ -14,9 +14,9 @@ model = None
 if MODEL_PATH.exists():
     try:
         model = joblib.load(str(MODEL_PATH))
-        print("✅ ML Model loaded successfully")
+        print("[OK] ML Model loaded successfully")
     except Exception as e:
-        print(f"❌ Failed to load ML model: {e}")
+        print(f"[ERROR] Failed to load ML model: {e}")
         model = None
 
 # Try to load Gemini API
@@ -118,6 +118,127 @@ def extract_phishing_indicators(email_text: str) -> str:
         return "No major phishing indicators detected"
     
     return "Red flags: " + "; ".join(indicators)
+
+
+def assess_local_phishing_risk(email_text: str) -> tuple[float, list[str]]:
+    """
+    Score phishing patterns that the statistical model can underweight.
+
+    The trained model remains the main detector. This layer catches readable
+    combinations such as a request verb plus sensitive personal data, or a
+    brand/account notice plus a link and urgency.
+    """
+    if not email_text:
+        return 0.0, []
+
+    text = email_text.lower()
+    reasons = []
+    score = 0.0
+
+    urls = re.findall(r'https?://[^\s<>"\']+|www\.[^\s<>"\']+', text)
+    suspicious_tlds = ('.ru', '.tk', '.xyz', '.top', '.club', '.info', '.zip', '.mov')
+    shorteners = ('bit.ly', 'tinyurl', 't.co/', 'goo.gl', 'ow.ly', 'is.gd', 'cutt.ly')
+    brand_terms = (
+        'paypal', 'apple', 'amazon', 'microsoft', 'google', 'gmail', 'netflix',
+        'linkedin', 'twitter', 'bank', 'irs', 'social security', 'dhl', 'fedex',
+        'ups', 'office 365', 'outlook', 'mailbox'
+    )
+    action_terms = (
+        'verify', 'confirm', 'validate', 'update', 'renew', 'reset', 'restore',
+        'unlock', 'reactivate', 'sign in', 'sign-in', 'login', 'complete',
+        'review', 'refresh'
+    )
+    urgency_terms = (
+        'urgent', 'immediately', 'today', 'within 24 hours', 'within 48 hours',
+        'last chance', 'before midnight', 'expires', 'suspended', 'locked',
+        'penalty', 'warrant', 'under investigation', 'archived'
+    )
+    sensitive_terms = (
+        'password', 'pin', 'passcode', 'credit card', 'debit card', 'bank account',
+        'routing number', 'wire transfer', 'social security', 'ssn',
+        "mother's maiden name", 'date of birth', 'dob', 'driver license',
+        "driver's license", 'passport', 'tax id', 'business tax id',
+        'employee id', 'salary information', 'current salary', 'job title',
+        'home address', 'phone number', 'id documents', 'photo id',
+        'billing profile', 'card on file', 'one-time code', 'username'
+    )
+    request_terms = (
+        'send', 'reply', 'provide', 'confirm', 'verify', 'submit', 'upload',
+        'share', 'enter', 'complete', 'needs', 'requires', 'refresh'
+    )
+    authority_terms = (
+        'law enforcement', 'police', 'court', 'warrant', 'irs',
+        'social security administration', 'interpol', 'nsa', 'city hall',
+        'tax penalty'
+    )
+    money_terms = (
+        'earn', 'paid', 'prize', 'reward', 'winner', 'lottery', 'inheritance',
+        'per week', 'survey', '$5000', '$5,000', 'no experience needed'
+    )
+
+    has_url = bool(urls) or 'click here' in text or 'use this link' in text
+    suspicious_url = any(
+        any(marker in url for marker in suspicious_tlds + shorteners)
+        or re.search(r'(paypal|apple|amazon|google|gmail|microsoft|netflix)[-.].+\.', url)
+        for url in urls
+    )
+    has_brand = any(term in text for term in brand_terms)
+    has_action = any(term in text for term in action_terms)
+    has_urgency = any(term in text for term in urgency_terms)
+    has_sensitive = any(term in text for term in sensitive_terms)
+    asks_for_info = any(term in text for term in request_terms)
+    has_authority = any(term in text for term in authority_terms)
+    has_money_hook = any(term in text for term in money_terms)
+
+    if has_sensitive and asks_for_info:
+        score += 0.45
+        reasons.append("Requests personal, identity, financial, or employee data")
+
+    if has_brand and has_action and (has_url or has_urgency):
+        score += 0.30
+        reasons.append("Uses brand/account impersonation with an action request")
+
+    if suspicious_url:
+        score += 0.35
+        reasons.append("Contains a suspicious or mismatched link")
+    elif has_url and has_action:
+        score += 0.15
+        reasons.append("Pushes the user toward an external link")
+
+    if has_authority and (has_urgency or has_action):
+        score += 0.35
+        reasons.append("Uses authority or legal pressure")
+
+    if has_money_hook and (has_action or has_url or 'no experience needed' in text):
+        score += 0.30
+        reasons.append("Uses an unrealistic money, prize, or job offer")
+
+    if has_urgency and has_action:
+        score += 0.15
+        reasons.append("Adds urgency to force quick action")
+
+    return min(score, 1.0), reasons
+
+
+def combine_phishing_scores(ml_score: float, local_risk_score: float) -> float:
+    """
+    Combine model and local-rule evidence without globally lowering the threshold.
+    A weak ML signal plus a weak rule signal can be enough when both point in the
+    same direction.
+    """
+    combined_evidence = ml_score + (local_risk_score * 0.5)
+    return min(1.0, max(ml_score, local_risk_score, combined_evidence))
+
+
+def should_flag_phishing(
+    ml_score: float,
+    local_risk_score: float,
+    threshold: float = 0.25,
+) -> bool:
+    """
+    Decide when to flag phishing from combined model and local-rule evidence.
+    """
+    return combine_phishing_scores(ml_score, local_risk_score) >= threshold
 
 def predict_phishing_gemini(email_text):
     """Primary: Use Gemini AI for smart detection"""

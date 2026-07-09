@@ -8,11 +8,11 @@ from dotenv import load_dotenv
 genai = None
 try:
     import google.genai as genai
-    print("✅ Imported google.genai")
+    print("[OK] Imported google.genai")
 except Exception:
     try:
         import google.generativeai as genai
-        print("✅ Imported google.generativeai")
+        print("[OK] Imported google.generativeai")
     except Exception:
         genai = None
         # Will not raise here; application will fallback to local model when Gemini is unavailable.
@@ -27,24 +27,24 @@ if api_key and genai is not None:
         # Prefer a Client constructor if present (google.genai style).
         if hasattr(genai, 'Client'):
             client = genai.Client(api_key=api_key)
-            print("✅ Gemini Client initialized successfully (Client)")
+            print("[OK] Gemini Client initialized successfully (Client)")
         else:
             # Some variants initialize via configure; adapt if available.
             if hasattr(genai, 'configure'):
                 try:
                     genai.configure(api_key=api_key)
                     client = genai
-                    print("✅ Gemini Client initialized successfully (configure)")
+                    print("[OK] Gemini Client initialized successfully (configure)")
                 except Exception as e:
-                    print(f"❌ Failed to configure Gemini client: {e}")
+                    print(f"[ERROR] Failed to configure Gemini client: {e}")
             else:
-                print("❌ GenAI module found but no known client initializer available")
+                print("[ERROR] GenAI module found but no known client initializer available")
     except Exception as e:
-        print(f"❌ Failed to create Gemini Client: {e}")
+        print(f"[ERROR] Failed to create Gemini Client: {e}")
 elif not api_key:
-    print("❌ No GEMINI_API_KEY found in .env")
+    print("[ERROR] No GEMINI_API_KEY found in .env")
 else:
-    print("❌ No GenAI package available; Gemini features will be disabled")
+    print("[ERROR] No GenAI package available; Gemini features will be disabled")
 
 
 def detect_with_gemini(email_text: str):
@@ -63,7 +63,7 @@ Email:
 {email_text[:2000]}"""
 
     try:
-        print("🔄 Calling Gemini API...")
+        print("[INFO] Calling Gemini API...")
         
         # Try the new google.genai API first
         if hasattr(client, 'models') and hasattr(client.models, 'generate_content'):
@@ -79,7 +79,7 @@ Email:
             return None, None, None
         
         text = response.text.strip()
-        print("✅ Gemini Response received")
+        print("[OK] Gemini Response received")
 
         label = None
         confidence = 75.0
@@ -116,5 +116,5 @@ Email:
         return label, round(confidence, 1), reason
 
     except Exception as e:
-        print(f"❌ Gemini API Call Failed: {e}")
+        print(f"[ERROR] Gemini API Call Failed: {e}")
         return None, None, None

@@ -3,7 +3,13 @@ from flask import Flask, render_template, request, jsonify
 import joblib
 
 from gemini_detector import detect_with_gemini
-from model import extract_email_body, extract_phishing_indicators
+from model import (
+    assess_local_phishing_risk,
+    combine_phishing_scores,
+    extract_email_body,
+    extract_phishing_indicators,
+    should_flag_phishing,
+)
 
 app = Flask(__name__)
 
@@ -14,9 +20,9 @@ MODEL_PATH = BASE_DIR / "model" / "phishing_email_model.joblib"
 ml_model = None
 if MODEL_PATH.exists():
     ml_model = joblib.load(MODEL_PATH)
-    print("✅ ML Model loaded successfully")
+    print("[OK] ML Model loaded successfully")
 else:
-    print("⚠️ ML Model not found. Please run train_model.py first.")
+    print("[WARN] ML Model not found. Please run train_model.py first.")
 
 @app.route("/", methods=["GET", "POST"])
 def index():
@@ -36,13 +42,21 @@ def index():
             # === PRIORITY: Use ML Model FIRST (fast & accurate on 63K emails) ===
             if ml_model:
                 pred_proba = ml_model.predict_proba([clean_email])[0]
-                phishing_prob = pred_proba[1]
+                ml_phishing_prob = pred_proba[1]
+                local_risk_score, local_risk_reasons = assess_local_phishing_risk(clean_email)
+                phishing_prob = combine_phishing_scores(ml_phishing_prob, local_risk_score)
                 
                 # Use 0.25 threshold - catches 92.1% of phishing including sophisticated patterns
-                if phishing_prob >= 0.25:
+                if should_flag_phishing(ml_phishing_prob, local_risk_score):
                     prediction = "Phishing"
                     confidence = round(phishing_prob * 100, 2)
                     reason = extract_phishing_indicators(clean_email)
+                    if local_risk_reasons:
+                        local_reason = "Pattern matches: " + "; ".join(local_risk_reasons)
+                        if reason == "No major phishing indicators detected":
+                            reason = local_reason
+                        else:
+                            reason = f"{reason}; {local_reason}"
                     
                     # === ONLY IF PHISHING: Try Gemini for detailed reasoning ===
                     gemini_output = detect_with_gemini(clean_email)
@@ -50,15 +64,15 @@ def index():
                         _, gemini_conf, gemini_reason = gemini_output
                         # Use Gemini's reasoning if available
                         reason = gemini_reason if gemini_reason else reason
-                        method = "🟠 ML Model + Gemini AI"
+                        method = "ML Model + Gemini AI"
                     else:
-                        method = "🔵 Local ML Model (Trained on 63K emails)"
+                        method = "Local ML Model (Trained on 63K emails)"
                 else:
                     # === Legitimate: Skip Gemini entirely ===
                     prediction = "Legitimate"
                     confidence = round((1 - phishing_prob) * 100, 2)
                     reason = "Email passes phishing checks"
-                    method = "🟢 Local ML Model (No Gemini needed)"
+                    method = "Local ML Model (No Gemini needed)"
 
     return render_template("index.html",
                            prediction=prediction,
@@ -101,13 +115,21 @@ def api_analyze():
         # === PRIORITY: Use ML Model FIRST (fast & accurate) ===
         if ml_model:
             pred_proba = ml_model.predict_proba([clean_email])[0]
-            phishing_prob = pred_proba[1]
+            ml_phishing_prob = pred_proba[1]
+            local_risk_score, local_risk_reasons = assess_local_phishing_risk(clean_email)
+            phishing_prob = combine_phishing_scores(ml_phishing_prob, local_risk_score)
             
-            # Use 0.25 threshold - catches 92.1% of phishing including sophisticated patterns
-            if phishing_prob >= 0.25:
+            # Use 0.25 threshold - catches phishing including sophisticated patterns
+            if should_flag_phishing(ml_phishing_prob, local_risk_score):
                 prediction = "Phishing"
                 confidence = round(phishing_prob * 100, 2)
                 reason = extract_phishing_indicators(clean_email)
+                if local_risk_reasons:
+                    local_reason = "Pattern matches: " + "; ".join(local_risk_reasons)
+                    if reason == "No major phishing indicators detected":
+                        reason = local_reason
+                    else:
+                        reason = f"{reason}; {local_reason}"
                 
                 # === ONLY IF PHISHING: Try Gemini for detailed reasoning ===
                 gemini_output = detect_with_gemini(clean_email)
