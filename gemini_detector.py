@@ -1,4 +1,5 @@
 import os
+from concurrent.futures import ThreadPoolExecutor, TimeoutError
 from dotenv import load_dotenv
 
 # Try to import Google GenAI SDK under common package names. Some installs
@@ -21,6 +22,8 @@ load_dotenv()
 
 api_key = os.getenv("GEMINI_API_KEY")
 client = None
+GEMINI_MODELS = ("gemini-flash-lite-latest", "gemini-flash-latest")
+GEMINI_TIMEOUT_SECONDS = 8
 
 if api_key and genai is not None:
     try:
@@ -65,18 +68,28 @@ Email:
     try:
         print("[INFO] Calling Gemini API...")
         
-        # Try the new google.genai API first
-        if hasattr(client, 'models') and hasattr(client.models, 'generate_content'):
-            response = client.models.generate_content(
-                model="gemini-2.5-flash",
-                contents=prompt
-            )
-        # Fall back to old google.generativeai API
-        elif hasattr(genai, 'GenerativeModel'):
-            model = genai.GenerativeModel('gemini-2.5-flash')
-            response = model.generate_content(prompt)
-        else:
-            return None, None, None
+        response = None
+        last_error = None
+
+        for model_name in GEMINI_MODELS:
+            try:
+                executor = ThreadPoolExecutor(max_workers=1)
+                future = executor.submit(_generate_with_model, model_name, prompt)
+                try:
+                    response = future.result(timeout=GEMINI_TIMEOUT_SECONDS)
+                except TimeoutError:
+                    future.cancel()
+                    executor.shutdown(wait=False, cancel_futures=True)
+                    print(f"[WARN] Gemini model {model_name} timed out")
+                    return None, None, None
+                executor.shutdown(wait=False, cancel_futures=True)
+                break
+            except Exception as e:
+                last_error = e
+                print(f"[WARN] Gemini model {model_name} failed: {e}")
+
+        if response is None:
+            raise last_error or RuntimeError("No Gemini response received")
         
         text = response.text.strip()
         print("[OK] Gemini Response received")
@@ -118,3 +131,17 @@ Email:
     except Exception as e:
         print(f"[ERROR] Gemini API Call Failed: {e}")
         return None, None, None
+
+
+def _generate_with_model(model_name: str, prompt: str):
+    # Try the new google.genai API first
+    if hasattr(client, 'models') and hasattr(client.models, 'generate_content'):
+        return client.models.generate_content(
+            model=model_name,
+            contents=prompt
+        )
+    # Fall back to old google.generativeai API
+    if hasattr(genai, 'GenerativeModel'):
+        model = genai.GenerativeModel(model_name)
+        return model.generate_content(prompt)
+    return None

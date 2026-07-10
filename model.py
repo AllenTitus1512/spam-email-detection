@@ -28,6 +28,7 @@ except:
 
 api_key = os.getenv("GEMINI_API_KEY")
 client = None
+GEMINI_MODELS = ("gemini-flash-latest", "gemini-flash-lite-latest")
 if genai and api_key:
     try:
         if hasattr(genai, 'Client'):
@@ -257,10 +258,20 @@ def predict_phishing_gemini(email_text):
         if client is None:
             raise RuntimeError("Gemini API key not configured")
 
-        response = client.models.generate_content(
-            model="gemini-2.5-flash",
-            contents=prompt
-        )
+        response = None
+        last_error = None
+        for model_name in GEMINI_MODELS:
+            try:
+                response = client.models.generate_content(
+                    model=model_name,
+                    contents=prompt
+                )
+                break
+            except Exception as e:
+                last_error = e
+
+        if response is None:
+            raise last_error or RuntimeError("No Gemini response received")
         text = response.text.strip()
 
         # Parse response
